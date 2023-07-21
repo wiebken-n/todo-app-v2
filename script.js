@@ -19,17 +19,6 @@ let filteredTodos;
 // load state
 window.addEventListener("load", (event) => {
   loadState();
-  setLanguageClass();
-  changeLanguage();
-  loadDummyTodo();
-  renderTodos();
-});
-
-// event listener for language switch button
-btnSwitchLanguage.addEventListener("click", function (event) {
-  ToggleLanguageState();
-  changeLanguage();
-  loadDummyTodo();
   renderTodos();
 });
 
@@ -105,9 +94,8 @@ function renderTodos() {
     // assign description of todo as name to li element
     newCheckbox.name = todo.description;
     // attach new li to todo-ul
-    newTodoLi.appendChild(newCheckbox);
+    newTodoLi.append(newCheckbox, newLabel);
     newLabel.appendChild(newTodoText);
-    newTodoLi.appendChild(newLabel);
     todoList.appendChild(newTodoLi);
   });
   // empty text input
@@ -165,8 +153,6 @@ function loadState() {
   if (localStorage.getItem("storageState") === null) {
     const defaultState = {
       todos: [{ description: "Add Todo", done: false, ID: 1 }],
-      ID: 2,
-      language: "en",
     };
     Object.assign(state, defaultState);
     checkboxAll.checked = true;
@@ -182,12 +168,29 @@ function saveState() {
   localStorage.setItem("storageState", jsonState);
 }
 
+// -------------------------------- language toggle function --- not maintenanced for now -----------------------
+/*
+
+
+// event listener for language switch button
+btnSwitchLanguage.addEventListener("click", function (event) {
+  ToggleLanguageState();
+  changeLanguage();
+  loadDummyTodo();
+  renderTodos();
+});
+
+
+
+
 // set language class according to state
 function setLanguageClass() {
   if (state.language === "de") {
     btnSwitchLanguage.classList.add("btn-language-german");
   }
 }
+
+
 // toggle language
 function ToggleLanguageState() {
   btnSwitchLanguage.classList.toggle("btn-language-german");
@@ -199,6 +202,7 @@ function ToggleLanguageState() {
   }
   saveState();
 }
+
 
 // change language
 function changeLanguage() {
@@ -223,6 +227,8 @@ function changeLanguage() {
   }
 }
 
+
+
 // set language of default todo
 function loadDummyTodo() {
   if (state.todos[0].ID === 1 && state.language === "de") {
@@ -233,3 +239,4 @@ function loadDummyTodo() {
   }
   saveState();
 }
+*/
