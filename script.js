@@ -16,28 +16,15 @@ const labelDoneTodos = document.querySelector(".label-done-todos");
 const state = [];
 let filteredTodos;
 
-// ----------------------------------------------
-function loadStateFromApi() {
-  fetch("http://localhost:4730/todos")
-    .then((res) => res.json())
-    .then((todosArrayApi) => {
-      console.log(todosArrayApi);
-      todosArrayApi.forEach((todo) => {
-        console.log(todo);
-        state.push(todo);
-      });
-      saveState();
-      sortTodos();
-      renderTodos();
-    });
-}
-// load state                                                                                   initial laoding works
+// -------------------------------------------------------
+
+// load state
 window.addEventListener("load", (event) => {
   loadStateFromApi();
   checkboxAll.checked = true;
 });
 
-// event listener for Add-todo button                                                           add todo  works
+// event listener for Add-todo button
 buttonAddTodo.addEventListener("click", function (event) {
   const newTodo = { description: textInput.value.trim(), done: false };
   let double = false;
@@ -73,7 +60,7 @@ buttonAddTodo.addEventListener("click", function (event) {
   }
 });
 
-// render todo list according to checkbox state                                                  sorting todos works
+// render todo list according to checkbox state
 checkboxContainer.addEventListener("change", function (event) {
   sortTodos();
   renderTodos();
@@ -82,16 +69,27 @@ checkboxContainer.addEventListener("change", function (event) {
 // remove done todos if button is clicked
 buttonRemoveTodo.addEventListener("click", function (event) {
   removeTodos();
-  saveState();
-  sortTodos();
-  renderTodos();
 });
-//-------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
 
+// gets resource items from API, loads items to state & local storage, sorts storage entries and renders them
+function loadStateFromApi() {
+  fetch("http://localhost:4730/todos")
+    .then((res) => res.json())
+    .then((todosArrayApi) => {
+      console.log(todosArrayApi);
+      todosArrayApi.forEach((todo) => {
+        state.push(todo);
+      });
+      saveState();
+      sortTodos();
+      renderTodos();
+    });
+}
+
+// renders todos in todo list
 function renderTodos() {
-  //                                                                                                render works
   // empty redered list
-
   todoList.innerText = "";
   // render todo list
   filteredTodos.forEach((todo) => {
@@ -129,52 +127,30 @@ function renderTodos() {
   // empty text input
   textInput.value = "";
 }
-/*
-function saveTodo() {                                                                                     // deprecated                                    
-  // initialize variable with text input
-  const newTodo = textInput.value.trim();
-  // initialize variable with current global ID
-  const newTodoID = state.ID;
-  // increment global ID
-  state.ID++;
-  // push todo description, undone state & ID to state object
-  state.todos.push({ description: newTodo, done: false, ID: newTodoID });
-}
-*/
-// filter todo list and return undone todos
+
+// filters todo list and removes done todos from API resource & state, saves state to local storage and renders state
 function removeTodos() {
-  //                                                                                                               needs fix
   state.forEach((todo) => {
     if (todo.done === true) {
       const todoID = todo.id;
-      const todoIndex = state.indexOf(todo);
-      console.log(todoIndex);
-      console.log(todo.id);
-      console.log(typeof todo.id);
-      console.log(todo.done);
+
       fetch("http://localhost:4730/todos/" + todoID, {
         method: "DELETE",
       })
         .then((res) => res.json())
         .then(() => {
-          console.log("Todo with ID " + todoID + " has been deleted");
+          const todoIndex = state.indexOf(todo);
+          state.splice(todoIndex, 1);
+          saveState();
+          sortTodos();
+          renderTodos();
         });
     }
   });
 }
 
-/*
-  for (let i = 0; i < state.todos.length; i++) {
-    if (state.todos[i].done === true) {
-      state.todos.splice(i, 1);
-      i--;
-    }
-  }
-}
-*/
 // sort todos according to current checkbox state
 function sortTodos() {
-  //                                                                                                          sorting works
   if (checkboxAll.checked) {
     filteredTodos = state.filter((todo) => {
       return todo.done || !todo.done;
@@ -198,22 +174,7 @@ function sortTodos() {
   }
 }
 
-// load state from storage - if none present, initialize default state
-function loadState() {
-  //                                                                                                                                needs update
-  if (localStorage.getItem("storageState") === null) {
-    const defaultState = {
-      todos: [{ description: "Add Todo", done: false, ID: 1 }],
-    };
-    Object.assign(state, defaultState);
-    checkboxAll.checked = true;
-  }
-  const loadStorage = JSON.parse(localStorage.getItem("storageState"));
-  Object.assign(state, loadStorage);
-  checkboxAll.checked = true;
-}
-
-// save state to storage ----                                                                                                             WORKS
+// save state to storage ----
 function saveState() {
   const jsonState = JSON.stringify(state);
   localStorage.setItem("storageState", jsonState);
