@@ -1,3 +1,5 @@
+"use strict";
+
 const textInput = document.querySelector(".text-todo-input");
 const buttonAddTodo = document.querySelector(".button-add-todo");
 const buttonRemoveTodo = document.querySelector(".button-remove-done-todos");
@@ -11,40 +13,67 @@ const labelAllTodos = document.querySelector(".label-all-todos");
 const labelOpenTodos = document.querySelector(".label-open-todos");
 const labelDoneTodos = document.querySelector(".label-done-todos");
 
-const state = {};
+const state = [];
 let filteredTodos;
 
 // ----------------------------------------------
-
-// load state
+function loadStateFromApi() {
+  fetch("http://localhost:4730/todos")
+    .then((res) => res.json())
+    .then((todosArrayApi) => {
+      console.log(todosArrayApi);
+      todosArrayApi.forEach((todo) => {
+        console.log(todo);
+        state.push(todo);
+      });
+      saveState();
+      sortTodos();
+      renderTodos();
+    });
+}
+// load state                                                                                   initial laoding works
 window.addEventListener("load", (event) => {
-  loadState();
-  renderTodos();
+  loadStateFromApi();
+  checkboxAll.checked = true;
 });
 
-// event listener for Add-todo button
+// event listener for Add-todo button                                                           add todo  works
 buttonAddTodo.addEventListener("click", function (event) {
+  const newTodo = { description: textInput.value.trim(), done: false };
+  let double = false;
   // no button action if input is empty
   if (textInput.value.trim() === "") {
     return;
-  }
-  // check if todo of that description already exists - if yes, no action & empty input field
-  for (let i = 0; i < state.todos.length; i++) {
-    if (
-      state.todos[i].description.toLowerCase() === textInput.value.toLowerCase()
-    ) {
-      textInput.value = "";
-      return;
+  } else {
+    state.forEach((todo) => {
+      // check for doubles
+      if (
+        newTodo.description.toString().toLowerCase() ===
+        todo.description.toString().toLowerCase()
+      ) {
+        double = true;
+        textInput.value = "";
+      }
+    });
+    // post new Todo to API & state, overwrite localstorage with new state
+    if (double === false) {
+      fetch("http://localhost:4730/todos", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(newTodo),
+      })
+        .then((res) => res.json())
+        .then((newTodoFromApi) => {
+          state.push(newTodoFromApi);
+          saveState();
+          sortTodos();
+          renderTodos();
+        });
     }
   }
-
-  saveTodo();
-  sortTodos();
-  saveState();
-  renderTodos();
 });
 
-// render todo list according to checkbox state
+// render todo list according to checkbox state                                                  sorting todos works
 checkboxContainer.addEventListener("change", function (event) {
   sortTodos();
   renderTodos();
@@ -53,18 +82,17 @@ checkboxContainer.addEventListener("change", function (event) {
 // remove done todos if button is clicked
 buttonRemoveTodo.addEventListener("click", function (event) {
   removeTodos();
-  sortTodos();
   saveState();
+  sortTodos();
   renderTodos();
 });
-
 //-------------------------------------------------------
 
 function renderTodos() {
+  //                                                                                                render works
   // empty redered list
 
   todoList.innerText = "";
-  sortTodos();
   // render todo list
   filteredTodos.forEach((todo) => {
     // create new li with checkbox & description
@@ -101,8 +129,8 @@ function renderTodos() {
   // empty text input
   textInput.value = "";
 }
-
-function saveTodo() {
+/*
+function saveTodo() {                                                                                     // deprecated                                    
   // initialize variable with text input
   const newTodo = textInput.value.trim();
   // initialize variable with current global ID
@@ -112,9 +140,30 @@ function saveTodo() {
   // push todo description, undone state & ID to state object
   state.todos.push({ description: newTodo, done: false, ID: newTodoID });
 }
-
+*/
 // filter todo list and return undone todos
 function removeTodos() {
+  //                                                                                                               needs fix
+  state.forEach((todo) => {
+    if (todo.done === true) {
+      const todoID = todo.id;
+      const todoIndex = state.indexOf(todo);
+      console.log(todoIndex);
+      console.log(todo.id);
+      console.log(typeof todo.id);
+      console.log(todo.done);
+      fetch("http://localhost:4730/todos/" + todoID, {
+        method: "DELETE",
+      })
+        .then((res) => res.json())
+        .then(() => {
+          console.log("Todo with ID " + todoID + " has been deleted");
+        });
+    }
+  });
+}
+
+/*
   for (let i = 0; i < state.todos.length; i++) {
     if (state.todos[i].done === true) {
       state.todos.splice(i, 1);
@@ -122,25 +171,26 @@ function removeTodos() {
     }
   }
 }
-
+*/
 // sort todos according to current checkbox state
 function sortTodos() {
+  //                                                                                                          sorting works
   if (checkboxAll.checked) {
-    filteredTodos = state.todos.filter((todo) => {
+    filteredTodos = state.filter((todo) => {
       return todo.done || !todo.done;
     });
     return filteredTodos;
   }
   if (checkboxOpen.checked) {
-    filteredTodos = state.todos.filter((todo) => !todo.done);
+    filteredTodos = state.filter((todo) => !todo.done);
     return filteredTodos;
   }
   if (checkboxDone.checked) {
-    filteredTodos = state.todos.filter((todo) => todo.done);
+    filteredTodos = state.filter((todo) => todo.done);
     return filteredTodos;
   }
   if (!checkboxAll.checked && !checkboxDone.checked && !checkboxOpen.checked) {
-    filteredTodos = state.todos.filter((todo) => {
+    filteredTodos = state.filter((todo) => {
       return todo.done || !todo.done;
     });
 
@@ -150,6 +200,7 @@ function sortTodos() {
 
 // load state from storage - if none present, initialize default state
 function loadState() {
+  //                                                                                                                                needs update
   if (localStorage.getItem("storageState") === null) {
     const defaultState = {
       todos: [{ description: "Add Todo", done: false, ID: 1 }],
@@ -162,7 +213,7 @@ function loadState() {
   checkboxAll.checked = true;
 }
 
-// save state to storage
+// save state to storage ----                                                                                                             WORKS
 function saveState() {
   const jsonState = JSON.stringify(state);
   localStorage.setItem("storageState", jsonState);
