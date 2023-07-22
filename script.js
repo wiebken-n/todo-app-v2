@@ -75,6 +75,7 @@ checkboxContainer.addEventListener("change", function (event) {
 buttonRemoveTodo.addEventListener("click", function (event) {
   removeTodos();
 });
+
 //---------------------------------------------------------------|| functions for base functionality of the app ||-----------------------------------------------------
 
 // gets resource items from API, loads items to state & local storage, sorts storage entries and renders them
@@ -143,14 +144,8 @@ function renderTodos() {
       newTodoLi.classList.toggle("done-todo");
     }
 
-    // add event listener to checkbox
-    newCheckbox.addEventListener("change", function (event) {
-      // save todo as done if box is checked
-      todo.done = event.target.checked;
-      // add strike-through-text class for (un)done todo
-      newTodoLi.classList.toggle("done-todo");
-      saveState();
-    });
+    // adds event listener to checkbox of new todo and toggle done-status if checkbox is clicked
+    addListenerToTodoCheckbox(todo, newTodoLi, newCheckbox);
 
     // assign description of todo as name to li element
     newCheckbox.name = todo.description;
@@ -181,6 +176,27 @@ function removeTodos() {
           renderTodos();
         });
     }
+  });
+}
+
+// add event listener to checkbox and toggle done-status if checkbox is clicked
+function addListenerToTodoCheckbox(todo, newTodoLi, newCheckbox) {
+  newCheckbox.addEventListener("change", function (event) {
+    // set todo done status according to checkbox status
+    todo.done = event.target.checked;
+    // add strike-through-text class for done todo / remove for open todo
+    newTodoLi.classList.toggle("done-todo");
+    // alter todo state of todo in API resource
+    fetch("http://localhost:4730/todos/" + todo.id, {
+      method: "PUT",
+      headers: { "content-type": "application/JSON" },
+      body: JSON.stringify(todo),
+    })
+      .then((res) => res.json())
+      .then((updatedTodoFromApi) => {
+        // save state to local storage
+        saveState();
+      });
   });
 }
 
