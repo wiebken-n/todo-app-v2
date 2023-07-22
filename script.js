@@ -32,6 +32,8 @@ buttonAddTodo.addEventListener("click", function (event) {
   let double = false;
   // no button action if input is empty
   if (textInput.value.trim() === "") {
+    alertNoTodoDescription();
+
     return;
   } else {
     state.forEach((todo) => {
@@ -41,6 +43,7 @@ buttonAddTodo.addEventListener("click", function (event) {
         todo.description.toString().toLowerCase()
       ) {
         double = true;
+        alertTodoDouble();
         textInput.value = "";
       }
     });
@@ -79,7 +82,6 @@ function loadStateFromApi() {
   fetch("http://localhost:4730/todos")
     .then((res) => res.json())
     .then((todosArrayApi) => {
-      console.log(todosArrayApi);
       todosArrayApi.forEach((todo) => {
         state.push(todo);
       });
@@ -180,6 +182,26 @@ function removeTodos() {
         });
     }
   });
+}
+
+// alert for no description for new todo
+function alertNoTodoDescription() {
+  if (language === "en") {
+    alert("Please enter a description for your Todo");
+  }
+  if (language === "de") {
+    alert("Bitte gib eine Beschreibung deines Todos ein");
+  }
+}
+
+// alert if todo already exists
+function alertTodoDouble() {
+  if (language === "en") {
+    alert("This Todo already exists");
+  }
+  if (language === "de") {
+    alert("Dieses Todo gibt es schon");
+  }
 }
 
 // -------------------------------------------------------------|| language toggle----------------------------------------------------------
