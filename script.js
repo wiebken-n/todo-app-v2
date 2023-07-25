@@ -33,8 +33,6 @@ buttonAddTodo.addEventListener("click", function (event) {
   // no button action if input is empty
   if (textInput.value.trim() === "") {
     alertNoTodoDescription();
-
-    return;
   } else {
     state.forEach((todo) => {
       // check for doubles
@@ -78,7 +76,7 @@ buttonRemoveTodo.addEventListener("click", function (event) {
 
 //---------------------------------------------------------------|| functions for base functionality of the app ||-----------------------------------------------------
 
-// gets resource items from API, loads items to state & local storage, sorts storage entries and renders them
+// gets resource items from API, loads items into state & local storage, sorts storage entries and renders them
 function loadStateFromApi() {
   fetch("http://localhost:4730/todos")
     .then((res) => res.json())
@@ -102,7 +100,7 @@ function saveState() {
 function sortTodos() {
   if (checkboxAll.checked) {
     filteredTodos = state.filter((todo) => {
-      return todo.done || !todo.done;
+      return todo;
     });
     return filteredTodos;
   }
@@ -116,7 +114,7 @@ function sortTodos() {
   }
   if (!checkboxAll.checked && !checkboxDone.checked && !checkboxOpen.checked) {
     filteredTodos = state.filter((todo) => {
-      return todo.done || !todo.done;
+      return todo;
     });
 
     return filteredTodos;
@@ -147,7 +145,7 @@ function renderTodos() {
     // adds event listener to checkbox of new todo and toggle done-status if checkbox is clicked
     addListenerToTodoCheckbox(todo, newTodoLi, newCheckbox);
 
-    // assign description of todo as name to li element
+    // assign description of todo as name to checkbox element
     newCheckbox.name = todo.description;
     // attach new li to todo-ul
     newTodoLi.append(newCheckbox, newLabel);
@@ -160,10 +158,9 @@ function renderTodos() {
 
 // filters todo list and removes done todos from API resource & state, saves state to local storage and renders state
 function removeTodos() {
-  state.forEach((todo) => {
+  for (let todo of state) {
     if (todo.done === true) {
       const todoID = todo.id;
-
       fetch("http://localhost:4730/todos/" + todoID, {
         method: "DELETE",
       })
@@ -176,7 +173,7 @@ function removeTodos() {
           renderTodos();
         });
     }
-  });
+  }
 }
 
 // add event listener to checkbox and toggle done-status if checkbox is clicked
@@ -193,7 +190,7 @@ function addListenerToTodoCheckbox(todo, newTodoLi, newCheckbox) {
       body: JSON.stringify(todo),
     })
       .then((res) => res.json())
-      .then((updatedTodoFromApi) => {
+      .then((updatedTodo) => {
         // save state to local storage
         saveState();
       });
@@ -229,13 +226,6 @@ btnSwitchLanguage.addEventListener("click", function (event) {
   renderTodos();
 });
 
-// set language class according to state
-function setLanguageClass() {
-  if (language === "de") {
-    btnSwitchLanguage.classList.add("btn-language-german");
-  }
-}
-
 // toggle language
 function ToggleLanguageState() {
   btnSwitchLanguage.classList.toggle("btn-language-german");
@@ -269,3 +259,12 @@ function changeLanguage() {
     textInput.setAttribute("placeholder", " Was ist zu erledigen?");
   }
 }
+
+/*
+// set language class according to state
+function setLanguageClass() {
+  if (language === "de") {
+    btnSwitchLanguage.classList.add("btn-language-german");
+  }
+}
+*/
