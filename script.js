@@ -81,9 +81,11 @@ function loadStateFromApi() {
   fetch("http://localhost:4730/todos")
     .then((res) => res.json())
     .then((todosArrayApi) => {
-      todosArrayApi.forEach((todo) => {
+      for (let todo of todosArrayApi) {
         state.push(todo);
-      });
+      }
+      //todosArrayApi.forEach((todo) => {
+
       saveState();
       sortTodos();
       renderTodos();
